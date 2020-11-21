@@ -1,6 +1,8 @@
-# smag 🚀
+# smag - show me a graph!
 
-Easily create graphs from cli commands and view them in the cli. Like the `watch` command but with a graph.
+Easily create graphs from cli commands and view them in the terminal. Like the `watch` command graphs the output.
+
+**smag was inspired and based on code from the wonderful [gping](https://github.com/orf/gping) tool by Tom Forbes**
 
 ![](./images/readme-example.gif)
 
@@ -8,55 +10,33 @@ Table of Contents
 =================
 
    * [Install :cd:](#install-cd)
-      * [Homebrew (MacOS   Linux)](#homebrew-macos--linux)
-      * [Binaries (Windows)](#binaries-windows)
-      * [Cargo](#cargo)
-   * [Usage :saxophone:](#usage-saxophone)
+   * [Usage ](#usage)
 
 # Install :cd:
+Install instructions coming soon.
 
-**smag is heavily based on code from the [gping](https://github.com/orf/gping) tool by Tom Forbes**
+# Usage
 
-## Homebrew (MacOS)
-
-```bash
-brew install gping
-```
-
-## Homebrew (Linux)
+Just run `smag [shell_cmd]`. e.g. `smag "ps aux | wc -l"`
 
 ```bash
-brew install orf/brew/gping
-```
-
-## Binaries (Windows)
-
-Download the latest release from [the github releases page](https://github.com/orf/gping/releases). Extract it 
-and move it to a directory on your `PATH`.
-
-## Cargo
-
-`cargo install gping`
-
-# Usage :saxophone:
-
-Just run `gping [host]`.
-
-```bash
-$ gping --help
-gping 0.1.7
-Ping, but with a graph.
+$ smag --help                                                                                                           ✔  2355  17:59:43
+smag 0.5.0
+Show Me A Graph - Like the `watch` command but with a graph of previous values.
 
 USAGE:
-    gping [OPTIONS] <hosts>...
+    smag [FLAGS] [OPTIONS] <cmds>...
 
 FLAGS:
-    -h, --help       Prints help information
+    -d, --diff       Graph the diff of subsequent command outputs
+        --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -b, --buffer <buffer>    Determines the number pings to display. [default: 100]
+    -h, --history <buffer-size>          Specify number of points to 'remember' and graph at once for each commands
+                                         [default: 100]
+    -n, --interval <polling-interval>    Specify update interval in seconds. [default: 1.0]
 
 ARGS:
-    <hosts>...    Hosts or IPs to ping
+    <cmds>...    Command(s) to run
 ```
