@@ -1,6 +1,6 @@
 [package]
 name = "smag"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Natan Yellin", "Tom Forbes <tom@tomforb.es>"]
 edition = "2018"
 repository = "https://github.com/orf/gping"
