@@ -1,6 +1,6 @@
 # smag - show me a graph!
 
-Easily create graphs from cli commands and view them in the terminal. Like the `watch` command graphs the output.
+Easily create graphs from cli commands and view them in the terminal. Like the `watch` command but with a graph of the output.
 
 **smag was inspired and based on code from the wonderful [gping](https://github.com/orf/gping) tool by Tom Forbes**
 
