@@ -20,7 +20,13 @@ cargo install --path .
 
 # Usage
 
-Just run `smag [shell_cmd]`. e.g. `smag "ps aux | wc -l"`
+Just run `smag [shell_cmd]`
+
+## Examples
+* Graph number of processes: `smag "ps aux | wc -l"`
+* Graph number of bash processes and ssh processes as two separate lines: `smag "ps aux | grep ssh | wc -l" "ps aux | grep bash | wc -l"`
+
+## Full Usage
 
 ```bash
 $ smag --help                                                                                                           ✔  2355  17:59:43
