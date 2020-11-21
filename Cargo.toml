@@ -1,8 +1,8 @@
 [package]
 name = "smag"
-version = "0.5"
+version = "0.5.0"
 authors = ["Natan Yellin", "Tom Forbes <tom@tomforb.es>"]
-edition = "2020"
+edition = "2018"
 repository = "https://github.com/orf/gping"
 license = "MIT"
 description = "Show Me A Graph - Command Line Graph Tool"
