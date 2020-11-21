@@ -35,10 +35,11 @@ pub fn draw_ui<T: tui::backend::Backend>(
                     .direction(Direction::Horizontal)
                     .constraints(
                         [
-                            Constraint::Percentage(25),
-                            Constraint::Percentage(25),
-                            Constraint::Percentage(25),
-                            Constraint::Percentage(25),
+                            Constraint::Percentage(20),
+                            Constraint::Percentage(20),
+                            Constraint::Percentage(20),
+                            Constraint::Percentage(20),
+                            Constraint::Percentage(20),
                         ]
                         .as_ref(),
                     )
@@ -50,17 +51,23 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 );
 
                 f.render_widget(
-                    Paragraph::new(format!("min {:?}", stats.minimum().unwrap_or(0))).style(style),
+                    Paragraph::new(format!("last {:?}", data_store.last(cmd_id) as u64))
+                        .style(style),
                     header_layout[1],
+                );
+
+                f.render_widget(
+                    Paragraph::new(format!("min {:?}", stats.minimum().unwrap_or(0))).style(style),
+                    header_layout[2],
                 );
                 f.render_widget(
                     Paragraph::new(format!("max {:?}", stats.maximum().unwrap_or(0))).style(style),
-                    header_layout[2],
+                    header_layout[3],
                 );
                 f.render_widget(
                     Paragraph::new(format!("p95 {:?}", stats.percentile(95.0).unwrap_or(0)))
                         .style(style),
-                    header_layout[3],
+                    header_layout[4],
                 );
             }
 

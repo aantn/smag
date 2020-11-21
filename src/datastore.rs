@@ -37,6 +37,13 @@ impl DataStore {
             None => data.push((x_index as f64, 0_f64)),
         }
     }
+
+    pub fn last(&self, cmd_index: usize) -> f64 {
+        let data = &self.data[cmd_index];
+        let (_, l) = data.last();
+        *l
+    }
+
     pub fn stats(&self) -> Vec<Histogram> {
         self.data
             .iter()

@@ -42,6 +42,10 @@ impl<T: Copy + Default> FixedRingBuffer<T> {
     pub fn iter(&self) -> std::slice::Iter<T> {
         self.as_slice().iter()
     }
+
+    pub fn last(&self) -> &T {
+        &self.buf[self.head]
+    }
 }
 
 #[cfg(test)]
