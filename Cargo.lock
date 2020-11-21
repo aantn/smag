@@ -121,18 +121,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gping"
-version = "0.1.8-alpha.0"
-dependencies = [
- "anyhow",
- "crossterm",
- "histogram",
- "pinger",
- "structopt",
- "tui",
-]
-
-[[package]]
 name = "heck"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -363,6 +351,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce32ea0c6c56d5eacaeb814fbed9960547021d3edd010ded1425f180536b20ab"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "smag"
+version = "0.1.8-alpha.0"
+dependencies = [
+ "anyhow",
+ "crossterm",
+ "histogram",
+ "pinger",
+ "structopt",
+ "tui",
 ]
 
 [[package]]

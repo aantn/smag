@@ -1,14 +1,13 @@
 [package]
-name = "gping"
-version = "0.1.8-alpha.0"
-authors = ["Tom Forbes <tom@tomforb.es>"]
-edition = "2018"
+name = "smag"
+version = "0.5"
+authors = ["Natan Yellin", "Tom Forbes <tom@tomforb.es>"]
+edition = "2020"
 repository = "https://github.com/orf/gping"
 license = "MIT"
-description = "Ping, but with a graph."
+description = "Show Me A Graph - Command Line Graph Tool"
 
 [dependencies]
-pinger = "0.1.8"
 structopt = "0.3.20"
 tui = { version = "0.12.0", features = ["crossterm"], default_features = false }
 # tui uses crossterm 0.17.7

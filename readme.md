@@ -1,9 +1,6 @@
-# gping 🚀
+# smag 🚀
 
-[![Crates.io](https://img.shields.io/crates/v/gping.svg)](https://crates.io/crates/gping)
-[![Actions Status](https://github.com/orf/gping/workflows/CI/badge.svg)](https://github.com/orf/gping/actions)
-
-Ping, but with a graph.
+Easily create graphs from cli commands and view them in the cli. Like the `watch` command but with a graph.
 
 ![](./images/readme-example.gif)
 
@@ -18,7 +15,7 @@ Table of Contents
 
 # Install :cd:
 
-**FYI:** The old Python version can be found under the [`python` tag](https://github.com/orf/gping/tree/python).
+**smag is heavily based on code from the [gping](https://github.com/orf/gping) tool by Tom Forbes**
 
 ## Homebrew (MacOS)
 

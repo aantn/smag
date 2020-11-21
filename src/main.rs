@@ -8,7 +8,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use histogram::Histogram;
-use pinger::{ping, PingResult};
+use std::process::Command;
 use std::io;
 use std::io::Write;
 use std::iter;
@@ -28,51 +28,58 @@ use tui::{symbols, Terminal};
 #[derive(Debug, StructOpt)]
 #[structopt(name = "gping", about = "Ping, but with a graph.")]
 struct Args {
-    #[structopt(help = "Hosts or IPs to ping", required = true)]
-    hosts: Vec<String>,
+    #[structopt(help = "Commands to run", required = true)]
+    cmds: Vec<String>,
     #[structopt(
-        short,
+        short="t",
+        long,
+        default_value = "1.0",
+        help = "Determines how frequently we run the command in seconds"
+    )]
+    polling_interval : f64,
+    #[structopt(
+        short="p",
         long,
         default_value = "100",
-        help = "Determines the number pings to display."
+        help = "Determines the number of data points to display."
     )]
-    buffer: usize,
+    buffer_size: usize,
 }
 
 struct App {
     styles: Vec<Style>,
     data: Vec<ringbuffer::FixedRingBuffer<(f64, f64)>>,
-    capacity: usize,
-    idx: Vec<i64>,
+    buffer_size: usize,
+    index: Vec<i64>,
     window_min: Vec<f64>,
     window_max: Vec<f64>,
 }
 
 impl App {
-    fn new(host_count: usize, capacity: usize) -> Self {
+    fn new(host_count: usize, buffer_size: usize) -> Self {
         App {
             styles: (0..host_count)
                 .map(|i| Style::default().fg(Color::Indexed(i as u8 + 1)))
                 .collect(),
             data: (0..host_count)
-                .map(|_| ringbuffer::FixedRingBuffer::new(capacity))
+                .map(|_| ringbuffer::FixedRingBuffer::new(buffer_size))
                 .collect(),
-            capacity,
-            idx: vec![0; host_count],
+            buffer_size,
+            index: vec![0; host_count],
             window_min: vec![0.0; host_count],
-            window_max: vec![capacity as f64; host_count],
+            window_max: vec![buffer_size as f64; host_count],
         }
     }
-    fn update(&mut self, host_id: usize, item: Option<Duration>) {
-        self.idx[host_id] += 1;
-        let data = &mut self.data[host_id];
-        if data.len() >= self.capacity {
-            self.window_min[host_id] += 1_f64;
-            self.window_max[host_id] += 1_f64;
+    fn update(&mut self, cmd_index: usize, item: Option<f64>) {
+        self.index[cmd_index] += 1;
+        let data = &mut self.data[cmd_index];
+        if data.len() >= self.buffer_size {
+            self.window_min[cmd_index] += 1_f64;
+            self.window_max[cmd_index] += 1_f64;
         }
         match item {
-            Some(dur) => data.push((self.idx[host_id] as f64, dur.as_micros() as f64)),
-            None => data.push((self.idx[host_id] as f64, 0_f64)),
+            Some(dur) => data.push((self.index[cmd_index] as f64, dur)),
+            None => data.push((self.index[cmd_index] as f64, 0_f64)),
         }
     }
     fn stats(&self) -> Vec<Histogram> {
@@ -107,32 +114,51 @@ impl App {
         // Add a 10% buffer to the top and bottom
         let max_10_percent = (max * 10_f64) / 100_f64;
         let min_10_percent = (min * 10_f64) / 100_f64;
-        [min - min_10_percent, max + max_10_percent]
+        [min - min_10_percent , max + max_10_percent ]
     }
     fn y_axis_labels(&self, bounds: [f64; 2]) -> Vec<Span> {
-        // Split into 5 sections
+        // we want to generate 5 label ticks
         let min = bounds[0];
         let max = bounds[1];
 
         let difference = max - min;
-        let increment = Duration::from_micros((difference / 3f64) as u64);
-        let duration = Duration::from_micros(min as u64);
+        let increment = (difference / 3f64) as f64;
+        let min = min as u64;
 
-        (0..7)
-            .map(|i| Span::raw(format!("{:?}", duration.add(increment * i))))
+        (0..4)
+            .map(|i| Span::raw(format!("{:?}", min.add((increment * i as f64) as u64))))
             .collect()
     }
 }
 
 #[derive(Debug)]
 enum Event {
-    Update(usize, PingResult),
+    Update(usize, Result<f64>),
     Input(KeyEvent),
+}
+
+fn run_command(cmd : &String) -> Result<f64> {
+    let mut output = if cfg!(target_os = "windows") {
+        let mut cmd = Command::new("cmd");
+        cmd.arg("/C");
+        cmd
+    } else {
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c");
+        cmd
+    };
+    let output = output
+        .arg(cmd)
+        .output()?;
+
+    let output = String::from_utf8_lossy(&output.stdout);
+    let output : f64 = output.trim().parse()?;
+    return Ok(output)
 }
 
 fn main() -> Result<()> {
     let args = Args::from_args();
-    let mut app = App::new(args.hosts.len(), args.buffer);
+    let mut app = App::new(args.cmds.len(), args.buffer_size);
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -146,25 +172,30 @@ fn main() -> Result<()> {
 
     let mut threads = vec![];
 
-    let killed = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let quit_signal = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 
-    for (host_id, host) in args.hosts.iter().cloned().enumerate() {
-        let ping_tx = key_tx.clone();
+    for (cmd_id, cmd) in args.cmds.iter().cloned().enumerate() {
+        let cmd_tx = key_tx.clone();
 
-        let killed_ping = std::sync::Arc::clone(&killed);
-        // Pump ping messages into the queue
-        let ping_thread = thread::spawn(move || -> Result<()> {
-            let stream = ping(host)?;
-            while !killed_ping.load(Ordering::Acquire) {
-                ping_tx.send(Event::Update(host_id, stream.recv()?))?;
+        let quit_signal_clone = std::sync::Arc::clone(&quit_signal);
+        let polling_interval = Duration::from_millis((args.polling_interval * 1000 as f64) as u64);
+        let cmd_thread = thread::spawn(move || -> Result<()> {
+            while !quit_signal_clone.load(Ordering::Acquire) {
+                let now = std::time::Instant::now();
+                cmd_tx.send(Event::Update(cmd_id, run_command(&cmd)))?;
+                let execution_time = now.elapsed();
+                let time_to_sleep = polling_interval.checked_sub(execution_time);
+                match time_to_sleep {
+                    Some(duration) => thread::sleep(duration),
+                    None => {}
+                }
             }
             Ok(())
         });
-        threads.push(ping_thread);
+        threads.push(cmd_thread);
     }
 
-    // Pump keyboard messages into the queue
-    let killed_thread = std::sync::Arc::clone(&killed);
+    let killed_thread = std::sync::Arc::clone(&quit_signal);
     let key_thread = thread::spawn(move || -> Result<()> {
         while !killed_thread.load(Ordering::Acquire) {
             if event::poll(Duration::from_secs(1))? {
@@ -181,8 +212,8 @@ fn main() -> Result<()> {
         match rx.recv()? {
             Event::Update(host_id, ping_result) => {
                 match ping_result {
-                    PingResult::Pong(duration) => app.update(host_id, Some(duration)),
-                    PingResult::Timeout => app.update(host_id, None),
+                    Ok(duration) => app.update(host_id, Some(duration)),
+                    Err(_) => app.update(host_id, None),
                 };
                 terminal.draw(|f| {
                     let chunks = Layout::default()
@@ -190,14 +221,14 @@ fn main() -> Result<()> {
                         .margin(2)
                         .constraints(
                             iter::repeat(Constraint::Length(1))
-                                .take(args.hosts.len())
+                                .take(args.cmds.len())
                                 .chain(iter::once(Constraint::Percentage(10)))
                                 .collect::<Vec<_>>()
                                 .as_ref(),
                         )
                         .split(f.size());
-                    for (((host_id, host), stats), &style) in args
-                        .hosts
+                    for (((cmd_id, cmd), stats), &style) in args
+                        .cmds
                         .iter()
                         .enumerate()
                         .zip(app.stats())
@@ -212,37 +243,37 @@ fn main() -> Result<()> {
                                     Constraint::Percentage(25),
                                     Constraint::Percentage(25),
                                 ]
-                                .as_ref(),
+                                    .as_ref(),
                             )
-                            .split(chunks[host_id]);
+                            .split(chunks[cmd_id]);
 
                         f.render_widget(
-                            Paragraph::new(format!("Pinging {}", host)).style(style),
+                            Paragraph::new(format!("Running cmd: {}", cmd)).style(style),
                             header_layout[0],
                         );
 
                         f.render_widget(
                             Paragraph::new(format!(
                                 "min {:?}",
-                                Duration::from_micros(stats.minimum().unwrap_or(0))
+                                stats.minimum().unwrap_or(0)
                             ))
-                            .style(style),
+                                .style(style),
                             header_layout[1],
                         );
                         f.render_widget(
                             Paragraph::new(format!(
                                 "max {:?}",
-                                Duration::from_micros(stats.maximum().unwrap_or(0))
+                                stats.maximum().unwrap_or(0)
                             ))
-                            .style(style),
+                                .style(style),
                             header_layout[2],
                         );
                         f.render_widget(
                             Paragraph::new(format!(
                                 "p95 {:?}",
-                                Duration::from_micros(stats.percentile(95.0).unwrap_or(0))
+                                stats.percentile(95.0).unwrap_or(0)
                             ))
-                            .style(style),
+                                .style(style),
                             header_layout[3],
                         );
                     }
@@ -275,16 +306,16 @@ fn main() -> Result<()> {
                                 .bounds(y_axis_bounds)
                                 .labels(app.y_axis_labels(y_axis_bounds)),
                         );
-                    f.render_widget(chart, chunks[args.hosts.len()]);
+                    f.render_widget(chart, chunks[args.cmds.len()]);
                 })?;
             }
             Event::Input(input) => match input.code {
                 KeyCode::Char('q') | KeyCode::Esc => {
-                    killed.store(true, Ordering::Release);
+                    quit_signal.store(true, Ordering::Release);
                     break;
                 }
                 KeyCode::Char('c') if input.modifiers == KeyModifiers::CONTROL => {
-                    killed.store(true, Ordering::Release);
+                    quit_signal.store(true, Ordering::Release);
                     break;
                 }
                 _ => {}
