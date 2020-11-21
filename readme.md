@@ -13,7 +13,10 @@ Table of Contents
    * [Usage ](#usage)
 
 # Install :cd:
-Install instructions coming soon.
+```bash
+git clone https://github.com/aantn/smag.git
+cargo install --path .
+```
 
 # Usage
 
