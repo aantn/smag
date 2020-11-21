@@ -1,46 +1,49 @@
+mod datastore;
 mod ringbuffer;
 mod ui;
-mod datastore;
-use anyhow::Result;
 use crate::datastore::DataStore;
+use anyhow::Result;
 use crossterm::event::{KeyEvent, KeyModifiers};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::process::Command;
 use std::io;
 use std::io::Write;
+use std::process::Command;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 use structopt::StructOpt;
-use tui::Terminal;
 use tui::backend::CrosstermBackend;
+use tui::Terminal;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "smag", about = "Show Me A Graph - Like the `watch` command but with a graph of previous values.")]
+#[structopt(
+    name = "smag",
+    about = "Show Me A Graph - Like the `watch` command but with a graph of previous values."
+)]
 pub struct Args {
     #[structopt(help = "Command(s) to run", required = true)]
     cmds: Vec<String>,
     #[structopt(
-        short="n",
-        long="interval",
+        short = "n",
+        long = "interval",
         default_value = "1.0",
         help = "Specify update interval in seconds."
     )]
-    polling_interval : f64,
+    polling_interval: f64,
     #[structopt(
-        short="d",
-        long="diff",
+        short = "d",
+        long = "diff",
         help = "Graph the diff of subsequent command outputs"
     )]
-    diff : bool,
+    diff: bool,
     #[structopt(
-        short="h",
-        long="history",
+        short = "h",
+        long = "history",
         default_value = "100",
         help = "Specify number of points to 'remember' and graph at once for each commands"
     )]
@@ -53,7 +56,7 @@ enum Event {
     Input(KeyEvent),
 }
 
-fn run_command(cmd : &str) -> Result<f64> {
+fn run_command(cmd: &str) -> Result<f64> {
     let mut output = if cfg!(target_os = "windows") {
         let mut cmd = Command::new("cmd");
         cmd.arg("/C");
@@ -63,15 +66,12 @@ fn run_command(cmd : &str) -> Result<f64> {
         cmd.arg("-c");
         cmd
     };
-    let output = output
-        .arg(cmd)
-        .output()?;
+    let output = output.arg(cmd).output()?;
 
     let output = String::from_utf8_lossy(&output.stdout);
-    let output : f64 = output.trim().parse()?;
+    let output: f64 = output.trim().parse()?;
     Ok(output)
 }
-
 
 fn main() -> Result<()> {
     let args = Args::from_args();
@@ -98,7 +98,7 @@ fn main() -> Result<()> {
         let polling_interval = Duration::from_millis((args.polling_interval * 1000_f64) as u64);
         let diff_mode = args.diff;
         let cmd_thread = thread::spawn(move || -> Result<()> {
-            let mut previous : f64 = 0 as f64;
+            let mut previous: f64 = 0 as f64;
             let mut idx = 0;
             while !quit_signal_clone.load(Ordering::Acquire) {
                 let now = std::time::Instant::now();
@@ -115,7 +115,9 @@ fn main() -> Result<()> {
                 }
                 let execution_time = now.elapsed();
                 let time_to_sleep = polling_interval.checked_sub(execution_time);
-                if let Some(duration) = time_to_sleep { thread::sleep(duration) }
+                if let Some(duration) = time_to_sleep {
+                    thread::sleep(duration)
+                }
                 idx += 1;
             }
             Ok(())
@@ -141,7 +143,7 @@ fn main() -> Result<()> {
             Event::Update(x_index, host_id, cmd_result) => {
                 match cmd_result {
                     Ok(duration) => app.update(host_id, x_index, Some(duration)),
-                    Err(_) => app.update(host_id,  x_index,None),
+                    Err(_) => app.update(host_id, x_index, None),
                 };
                 crate::ui::draw_ui(&args, &app, &mut terminal)
             }

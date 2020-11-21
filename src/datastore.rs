@@ -1,8 +1,8 @@
 use super::ringbuffer;
-use std::ops::Add;
 use histogram::Histogram;
-use tui::text::Span;
+use std::ops::Add;
 use tui::style::{Color, Style};
+use tui::text::Span;
 
 pub struct DataStore {
     pub styles: Vec<Style>,
@@ -26,7 +26,7 @@ impl DataStore {
             window_max: vec![buffer_size as f64; host_count],
         }
     }
-    pub fn update(&mut self, cmd_index: usize, x_index : u64, item: Option<f64>) {
+    pub fn update(&mut self, cmd_index: usize, x_index: u64, item: Option<f64>) {
         let data = &mut self.data[cmd_index];
         if data.len() >= self.buffer_size {
             self.window_min[cmd_index] += 1_f64;
@@ -69,7 +69,7 @@ impl DataStore {
         // Add a 10% buffer to the top and bottom
         let max_10_percent = (max * 10_f64) / 100_f64;
         let min_10_percent = (min * 10_f64) / 100_f64;
-        [min - min_10_percent , max + max_10_percent ]
+        [min - min_10_percent, max + max_10_percent]
     }
     pub fn y_axis_labels(&self, bounds: [f64; 2]) -> Vec<Span> {
         // we want to generate 5 label ticks
@@ -85,4 +85,3 @@ impl DataStore {
             .collect()
     }
 }
-
