@@ -13,10 +13,14 @@ Table of Contents
    * [Usage ](#usage)
 
 # Install :cd:
+
+## Install from source
 ```bash
 git clone https://github.com/aantn/smag.git
 cargo install --path .
 ```
+## Install from binaries
+Binaries for Mac, Windows, and Linux are available under Releases.
 
 # Usage
 
