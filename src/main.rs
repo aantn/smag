@@ -53,7 +53,7 @@ enum Event {
     Input(KeyEvent),
 }
 
-fn run_command(cmd : &String) -> Result<f64> {
+fn run_command(cmd : &str) -> Result<f64> {
     let mut output = if cfg!(target_os = "windows") {
         let mut cmd = Command::new("cmd");
         cmd.arg("/C");
@@ -69,7 +69,7 @@ fn run_command(cmd : &String) -> Result<f64> {
 
     let output = String::from_utf8_lossy(&output.stdout);
     let output : f64 = output.trim().parse()?;
-    return Ok(output)
+    Ok(output)
 }
 
 
@@ -95,7 +95,7 @@ fn main() -> Result<()> {
         let cmd_tx = key_tx.clone();
 
         let quit_signal_clone = std::sync::Arc::clone(&quit_signal);
-        let polling_interval = Duration::from_millis((args.polling_interval * 1000 as f64) as u64);
+        let polling_interval = Duration::from_millis((args.polling_interval * 1000_f64) as u64);
         let diff_mode = args.diff;
         let cmd_thread = thread::spawn(move || -> Result<()> {
             let mut previous : f64 = 0 as f64;
@@ -115,11 +115,8 @@ fn main() -> Result<()> {
                 }
                 let execution_time = now.elapsed();
                 let time_to_sleep = polling_interval.checked_sub(execution_time);
-                match time_to_sleep {
-                    Some(duration) => thread::sleep(duration),
-                    None => {}
-                }
-                idx = idx+1;
+                if let Some(duration) = time_to_sleep { thread::sleep(duration) }
+                idx += 1;
             }
             Ok(())
         });
