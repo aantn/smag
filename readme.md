@@ -20,7 +20,8 @@ cargo install --path .
 
 # Usage
 
-Just run `smag [shell_cmd]`
+Just run `smag [shell_cmd]` or `smag [cmd1] [cmd2]` if you want to graph multiple commands at once.
+You can control how often the graph updates with the `-n` flag. You can also graph a derivative of the command's output using `-d`.
 
 ## Examples
 * Graph number of processes: `smag "ps aux | wc -l"`
