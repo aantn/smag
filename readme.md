@@ -27,6 +27,10 @@ Binaries for Mac, Windows, and Linux are available under Releases.
 Just run `smag [shell_cmd]` or `smag [cmd1] [cmd2]` if you want to graph multiple commands at once.
 You can control how often the graph updates with the `-n` flag. You can also graph a derivative of the command's output using `-d`.
 
+`smag` can graph any command which outputs an integer or float. Any whitespace before/after the number is trimmed automatically.
+
+Pull requests for more features or fixes are welcome.
+
 ## Examples
 * Graph number of processes: `smag "ps aux | wc -l"`
 * Graph number of bash processes and ssh processes as two separate lines: `smag "ps aux | grep ssh | wc -l" "ps aux | grep bash | wc -l"`
