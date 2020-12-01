@@ -40,8 +40,13 @@ impl DataStore {
 
     pub fn last(&self, cmd_index: usize) -> f64 {
         let data = &self.data[cmd_index];
-        let (_, l) = data.last();
-        *l
+        match data.len() {
+            0 => 0 as f64,
+            _ => {
+                let (_, l) = data.last();
+                *l
+            }
+        }
     }
 
     pub fn stats(&self) -> Vec<Histogram> {
@@ -87,6 +92,7 @@ impl DataStore {
         let increment = (difference / 3f64) as f64;
         let min = min as u64;
 
+        // TODO: don't convert all increments to int
         (0..4)
             .map(|i| Span::raw(format!("{:?}", min.add((increment * i as f64) as u64))))
             .collect()
