@@ -1,6 +1,5 @@
 use super::ringbuffer;
 use histogram::Histogram;
-use std::ops::Add;
 use tui::style::{Color, Style};
 use tui::text::Span;
 
@@ -83,6 +82,25 @@ impl DataStore {
         let min_10_percent = (min * 10_f64) / 100_f64;
         [min - min_10_percent, max + max_10_percent]
     }
+
+    fn get_label(&self, increment: f64, value: f64) -> String {
+        if increment > 1.0 {
+            format!("{:.0}", value)
+        } else if increment < 1.0 && increment >= 0.1 {
+            format!("{:.1}", value)
+        } else if increment < 0.1 && increment >= 0.01 {
+            format!("{:.2}", value)
+        } else if increment < 0.01 && increment >= 0.001 {
+            format!("{:.3}", value)
+        } else if increment < 0.001 && increment >= 0.0001 {
+            format!("{:.4}", value)
+        } else if increment < 0.0001 && increment >= 0.00001 {
+            format!("{:.5}", value)
+        } else {
+            format!("{}", value)
+        }
+    }
+
     pub fn y_axis_labels(&self, bounds: [f64; 2]) -> Vec<Span> {
         // we want to generate 5 label ticks
         let min = bounds[0];
@@ -90,11 +108,9 @@ impl DataStore {
 
         let difference = max - min;
         let increment = (difference / 3f64) as f64;
-        let min = min as u64;
 
-        // TODO: don't convert all increments to int
         (0..4)
-            .map(|i| Span::raw(format!("{:?}", min.add((increment * i as f64) as u64))))
+            .map(|i| Span::raw(self.get_label(increment, min + increment * i as f64)))
             .collect()
     }
 }
