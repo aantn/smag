@@ -1,4 +1,5 @@
 use super::ringbuffer;
+use super::Args;
 use histogram::Histogram;
 use tui::style::{Color, Style};
 use tui::text::Span;
@@ -6,28 +7,29 @@ use tui::text::Span;
 pub struct DataStore {
     pub styles: Vec<Style>,
     pub data: Vec<ringbuffer::FixedRingBuffer<(f64, f64)>>,
-    buffer_size: usize,
+    args : Args,
     window_min: Vec<f64>,
     window_max: Vec<f64>,
 }
 
 impl DataStore {
-    pub fn new(host_count: usize, buffer_size: usize) -> Self {
+    pub fn new(args : Args) -> Self {
+	let host_count = args.cmds.len();
         DataStore {
             styles: (0..host_count)
                 .map(|i| Style::default().fg(Color::Indexed(i as u8 + 1)))
                 .collect(),
             data: (0..host_count)
-                .map(|_| ringbuffer::FixedRingBuffer::new(buffer_size))
+                .map(|_| ringbuffer::FixedRingBuffer::new(args.buffer_size))
                 .collect(),
-            buffer_size,
             window_min: vec![0.0; host_count],
-            window_max: vec![buffer_size as f64; host_count],
+            window_max: vec![args.buffer_size as f64; host_count],
+            args: args,
         }
     }
     pub fn update(&mut self, cmd_index: usize, x_index: u64, item: Option<f64>) {
         let data = &mut self.data[cmd_index];
-        if data.len() >= self.buffer_size {
+        if data.len() >= self.args.buffer_size {
             self.window_min[cmd_index] += 1_f64;
             self.window_max[cmd_index] += 1_f64;
         }
@@ -83,7 +85,7 @@ impl DataStore {
         [min - min_10_percent, max + max_10_percent]
     }
 
-    fn get_label(&self, increment: f64, value: f64) -> String {
+    fn format_tick(&self, increment: f64, value: f64) -> String {
         if increment > 1.0 {
             format!("{:.0}", value)
         } else if increment < 1.0 && increment >= 0.1 {
@@ -110,7 +112,7 @@ impl DataStore {
         let increment = difference / (ticks as f64 - 1.0);
 
         (0..ticks)
-            .map(|i| Span::raw(self.get_label(increment, min + increment * i as f64)))
+            .map(|i| Span::raw(self.format_tick(increment, min + increment * i as f64) + " " + &self.args.y_label))
             .collect()
     }
 }

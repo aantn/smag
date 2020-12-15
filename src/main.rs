@@ -20,7 +20,7 @@ use structopt::StructOpt;
 use tui::backend::CrosstermBackend;
 use tui::Terminal;
 
-#[derive(Debug, StructOpt)]
+#[derive(Clone, Debug, StructOpt)]
 #[structopt(
     name = "smag",
     about = "Show Me A Graph - Like the `watch` command but with a graph of previous values."
@@ -28,6 +28,7 @@ use tui::Terminal;
 pub struct Args {
     #[structopt(help = "Command(s) to run", required = true)]
     cmds: Vec<String>,
+
     #[structopt(
         short = "n",
         long = "interval",
@@ -35,12 +36,22 @@ pub struct Args {
         help = "Specify update interval in seconds."
     )]
     polling_interval: f64,
+
+    #[structopt(
+        short = "y",
+        long = "y-label",
+        default_value = "",
+        help = "Label/units for y-axis (e.g. 'MB', 'Seconds')"
+    )]
+    y_label: String,
+
     #[structopt(
         short = "d",
         long = "diff",
         help = "Graph the diff of subsequent command outputs"
     )]
     diff: bool,
+
     #[structopt(
         short = "h",
         long = "history",
@@ -75,7 +86,7 @@ fn run_command(cmd: &str) -> Result<f64> {
 
 fn main() -> Result<()> {
     let args = Args::from_args();
-    let mut app = DataStore::new(args.cmds.len(), args.buffer_size);
+    let mut app = DataStore::new(args.clone());
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
