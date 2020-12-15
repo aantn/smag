@@ -102,14 +102,14 @@ impl DataStore {
     }
 
     pub fn y_axis_labels(&self, bounds: [f64; 2]) -> Vec<Span> {
-        // we want to generate 5 label ticks
+	let ticks = 5;
         let min = bounds[0];
         let max = bounds[1];
 
         let difference = max - min;
-        let increment = (difference / 3f64) as f64;
+        let increment = difference / (ticks as f64 - 1.0);
 
-        (0..4)
+        (0..ticks)
             .map(|i| Span::raw(self.get_label(increment, min + increment * i as f64)))
             .collect()
     }
