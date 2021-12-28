@@ -2,7 +2,11 @@
 
 Easily create graphs from cli commands and view them in the terminal. Like the `watch` command but with a graph of the output.
 
-**smag was inspired and based on code from the wonderful [gping](https://github.com/orf/gping) tool by Tom Forbes**
+# Other tools
+
+I also work on [Robusta](https://github.com/robusta-dev/robusta) - a Kubernetes troubleshooting and automation platform. If you use Kubernetes, you'll like it.
+
+# Demo
 
 ![](./images/readme-example.gif)
 
@@ -59,3 +63,6 @@ OPTIONS:
 ARGS:
     <cmds>...    Command(s) to run
 ```
+
+## Inspiration
+**smag was inspired and based on code from the wonderful [gping](https://github.com/orf/gping) tool by Tom Forbes**
