@@ -4,7 +4,7 @@ Easily create graphs from cli commands and view them in the terminal. Like the `
 
 # Other tools
 
-I also work on [Robusta](https://github.com/robusta-dev/robusta) - a Kubernetes troubleshooting and automation platform. If you use Kubernetes, you'll like it.
+I also work on [Robusta](https://github.com/robusta-dev/robusta) - a Kubernetes monitoring and automation platform. It makes your Prometheus alerts better.
 
 # Demo
 
