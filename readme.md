@@ -2,10 +2,6 @@
 
 Easily create graphs from cli commands and view them in the terminal. Like the `watch` command but with a graph of the output.
 
-# Other tools
-
-I also work on [Robusta](https://github.com/robusta-dev/robusta) - a Kubernetes monitoring and automation platform. It makes your Prometheus alerts better.
-
 # Demo
 
 ![](./images/readme-example.gif)
@@ -66,3 +62,7 @@ ARGS:
 
 ## Inspiration
 **smag was inspired and based on code from the wonderful [gping](https://github.com/orf/gping) tool by Tom Forbes**
+
+# Other tools
+
+I also work on [Robusta](https://github.com/robusta-dev/robusta) - better Prometheus based alerts for Kubernetes.
