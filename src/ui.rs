@@ -13,15 +13,14 @@ pub fn draw_ui<T: tui::backend::Backend>(
 ) {
     terminal
         .draw(|f| {
-            let chunks = Layout::default()
+            let chunks: Vec<tui::layout::Rect> = Layout::default()
                 .direction(Direction::Vertical)
                 .margin(2)
                 .constraints(
                     iter::repeat(Constraint::Length(1))
                         .take(args.cmds.len())
                         .chain(iter::once(Constraint::Percentage(10)))
-                        .collect::<Vec<_>>()
-                        .as_ref(),
+                        .collect::<Vec<Constraint>>(),
                 )
                 .split(f.size());
             for (((cmd_id, cmd), stats), &style) in args
