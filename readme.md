@@ -39,8 +39,8 @@ Pull requests for more features or fixes are welcome.
 ## Full Usage
 
 ```bash
-$ smag --help                                                                                                           ✔  2355  17:59:43
-smag 0.5.0
+$ smag --help
+smag 0.6.0
 Show Me A Graph - Like the `watch` command but with a graph of previous values.
 
 USAGE:
@@ -55,6 +55,7 @@ OPTIONS:
     -h, --history <buffer-size>          Specify number of points to 'remember' and graph at once for each commands
                                          [default: 100]
     -n, --interval <polling-interval>    Specify update interval in seconds. [default: 1.0]
+    -y, --y-label <y-label>              Label/units for y-axis (e.g. 'MB', 'Seconds') [default: ]
 
 ARGS:
     <cmds>...    Command(s) to run
