@@ -35,6 +35,7 @@ Pull requests for more features or fixes are welcome.
 * Graph number of processes: `smag "ps aux | wc -l"`
 * Graph number of bash processes and ssh processes as two separate lines: `smag "ps aux | grep ssh | wc -l" "ps aux | grep bash | wc -l"`
 * Graph number of running Kubernetes pods: `smag "kubectl get pods -A | grep Running | wc -l"`
+* Graph CPU temperature on Raspberry Pi 5: `sudo -v && smag -n 0.5 -y °C "sudo vcgencmd measure_temp | tr -d -c 0-9."`
 
 ## Full Usage
 
