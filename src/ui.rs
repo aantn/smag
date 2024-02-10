@@ -50,7 +50,7 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 );
 
                 f.render_widget(
-                    Paragraph::new(format!("last {:?}", data_store.last(cmd_id) as u64))
+                    Paragraph::new(format!("current {:?}", data_store.last(cmd_id) as u64))
                         .style(style),
                     header_layout[1],
                 );
