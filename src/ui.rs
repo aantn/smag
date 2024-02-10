@@ -83,7 +83,7 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 })
                 .collect();
 
-            let y_axis_bounds = data_store.y_axis_bounds();
+            let (y_axis_bounds, y_axis_num_ticks) = data_store.y_axis_bounds();
 
             let chart = Chart::new(datasets)
                 .block(Block::default().borders(Borders::NONE))
@@ -96,7 +96,7 @@ pub fn draw_ui<T: tui::backend::Backend>(
                     Axis::default()
                         .style(Style::default().fg(Color::Gray))
                         .bounds(y_axis_bounds)
-                        .labels(data_store.y_axis_labels(y_axis_bounds)),
+                        .labels(data_store.y_axis_labels(y_axis_bounds, y_axis_num_ticks)),
                 );
             f.render_widget(chart, chunks[args.cmds.len()]);
         })
