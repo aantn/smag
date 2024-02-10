@@ -135,8 +135,16 @@ impl DataStore {
 
         let increment = (max - min) / (num_ticks - 1) as f64;
 
+        let y_label = &self.args.y_label;
+        let mut suffix = String::new();
+        suffix.push_str(" ");
+        if !y_label.is_empty() {
+            suffix.push_str(&y_label);
+            suffix.push_str(" ");
+        }
+
         (0..num_ticks)
-            .map(|i| Span::raw(self.format_tick(increment, min + increment * i as f64) + " " + &self.args.y_label))
+            .map(|i| Span::raw(self.format_tick(increment, min + increment * i as f64) + &suffix))
             .collect()
     }
 }
