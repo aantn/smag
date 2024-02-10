@@ -10,8 +10,7 @@ pub struct FixedRingBuffer<T> {
 impl<T: Copy + Default> FixedRingBuffer<T> {
     pub fn new(capacity: usize) -> Self {
         Self {
-            /**
-             * Vector initialized with a capacity twice as high as the maximum number of elements
+            /* Vector initialized with a capacity twice as high as the maximum number of elements
              * displayed in the chart in order to always have all current values stored in one
              * contiguous slice of the vector.
              */
@@ -37,6 +36,7 @@ impl<T: Copy + Default> FixedRingBuffer<T> {
             self.head = 0;
         }
         // Append to back of vector
+        self.buf.push(elem);
         if self.buf.len() > self.cap {
             self.head += 1;
         }
