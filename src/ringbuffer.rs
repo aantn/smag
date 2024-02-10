@@ -3,13 +3,18 @@ use std::fmt::Debug;
 #[derive(Debug)]
 pub struct FixedRingBuffer<T> {
     buf: Vec<T>,
-    cap: usize,
-    head: usize,
+    cap: usize,     // Buffer size
+    head: usize,    // Index of most recent value
 }
 
 impl<T: Copy + Default> FixedRingBuffer<T> {
     pub fn new(capacity: usize) -> Self {
         Self {
+            /**
+             * Vector initialized with a capacity twice as high as the maximum number of elements
+             * displayed in the chart in order to always have all current values stored in one
+             * contiguous slice of the vector.
+             */
             buf: Vec::with_capacity(2 * capacity),
             cap: capacity,
             head: 0,
@@ -25,11 +30,13 @@ impl<T: Copy + Default> FixedRingBuffer<T> {
         // already reduced memory allocation with larger buffer
         if self.buf.len() == self.buf.capacity() {
             let len = self.buf.len();
+            // Overwrite older values by shifting left
             self.buf.copy_within(self.head + 1..len, 0);
+            // Truncate vector
             self.buf.resize(self.cap - 1, Default::default());
             self.head = 0;
         }
-        self.buf.push(elem);
+        // Append to back of vector
         if self.buf.len() > self.cap {
             self.head += 1;
         }
@@ -44,7 +51,8 @@ impl<T: Copy + Default> FixedRingBuffer<T> {
     }
 
     pub fn last(&self) -> &T {
-        &self.buf[self.head]
+        // New values are always appended to the end of the buffer
+        &self.buf[self.buf.len() - 1]
     }
 }
 
