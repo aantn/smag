@@ -83,9 +83,11 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 })
                 .collect();
 
+            let chart_height = f.size().height as i32 - args.cmds.len() as i32 - 4;
+
             let (y_axis_bounds, y_axis_num_ticks) = if args.manual_range.is_empty() {
                 // Automatic range and tick placement algorithm
-                data_store.y_axis_bounds()
+                data_store.y_axis_bounds(chart_height)
             } else {
                 // User supplied range and possiby tick increment
                 let mut parts = args.manual_range.split(',');
@@ -102,11 +104,13 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 let increment : f64 = if num_args == 3 {
                     parts.next().unwrap().parse().unwrap()
                 } else {
-                    (max - min) / 4.0   // Default to targeting 5 ticks (= 4+1)
+                    let target_lines_per_tick = 6.0;
+                    let target_num_ticks : f64 = (chart_height - 1) as f64 / target_lines_per_tick;
+                    (max - min) / target_num_ticks
                 }.min(max - min);   // Make sure increment is not greater than range
-                let tick_count : i32 = ((max - min) / increment).round() as i32 + 1;
+                let num_ticks : i32 = ((max - min) / increment).round() as i32 + 1;
 
-                ([min, max], tick_count)
+                ([min, max], num_ticks)
             };
 
             let chart = Chart::new(datasets)
