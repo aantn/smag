@@ -7,13 +7,13 @@ use tui::text::Span;
 pub struct DataStore {
     pub styles: Vec<Style>,
     pub data: Vec<ringbuffer::FixedRingBuffer<(f64, f64)>>,
-    args : Args,
+    args: Args,
     window_min: Vec<f64>,
     window_max: Vec<f64>,
 }
 
 impl DataStore {
-    pub fn new(args : Args) -> Self {
+    pub fn new(args: Args) -> Self {
         let host_count = args.cmds.len();
         DataStore {
             styles: (0..host_count)
@@ -78,7 +78,7 @@ impl DataStore {
             .flatten()
             .map(|v| v.1);
         let min = iter.clone().fold(f64::INFINITY, |a, b| a.min(b));
-        let max = iter        .fold(0f64,          |a, b| a.max(b));
+        let max = iter.fold(0f64, |a, b| a.max(b));
         let range = max - min;
 
         // Parameters for automatic range and tick placement algorithm
@@ -91,31 +91,33 @@ impl DataStore {
         } else {
             2.0
         };
-        let target_num_ticks : f64 = ((chart_height - 1) as f64 / target_lines_per_tick).max(2.0);
-        let preferred_increment : f64 = range_buffered / target_num_ticks;
-        let log10_times3 : i32 = (preferred_increment.log10() * 3.0).round() as i32;
-        let exponent : i32 = log10_times3 / 3;
-        let mut increment : f64 = 10_f64.powf(exponent as f64);
+        let target_num_ticks: f64 = ((chart_height - 1) as f64 / target_lines_per_tick).max(2.0);
+        let preferred_increment: f64 = range_buffered / target_num_ticks;
+        let log10_times3: i32 = (preferred_increment.log10() * 3.0).round() as i32;
+        let exponent: i32 = log10_times3 / 3;
+        let mut increment: f64 = 10_f64.powf(exponent as f64);
         // Adjust increment to a power-of-ten multiple of 1, 2 or 5
         match log10_times3 % 3 {
             -2 => increment /= 5.0,
             -1 => increment /= 2.0,
-             0 => (),
-             1 => increment *= 2.0,
-             2 => increment *= 5.0,
+            0 => (),
+            1 => increment *= 2.0,
+            2 => increment *= 5.0,
             _ => increment = 1.0,
         }
 
         // Add buffer and round out to multiples of increment
         let range_buffer_per_side = if range > 0.0 {
             range_buffer_percent_per_side / 100.0 * range
-        } else { 1.0 };
+        } else {
+            1.0
+        };
         let min_round = ((min - range_buffer_per_side) / increment).floor() * increment;
-        let max_round = ((max + range_buffer_per_side) / increment).ceil()  * increment;
+        let max_round = ((max + range_buffer_per_side) / increment).ceil() * increment;
         // Calculate number of ticks
-        let mut num_ticks : i32 = ((max_round - min_round) / increment).round() as i32 + 1;
-        
-        if (((chart_height - 1) as f64 / num_ticks as f64)) < (0.3 * target_lines_per_tick) {
+        let mut num_ticks: i32 = ((max_round - min_round) / increment).round() as i32 + 1;
+
+        if ((chart_height - 1) as f64 / num_ticks as f64) < (0.3 * target_lines_per_tick) {
             // Ticks are too close together, keep only min and max
             num_ticks = 2;
         }

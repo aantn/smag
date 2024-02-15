@@ -3,8 +3,8 @@ use std::fmt::Debug;
 #[derive(Debug)]
 pub struct FixedRingBuffer<T> {
     buf: Vec<T>,
-    cap: usize,     // Buffer size
-    head: usize,    // Index of most recent value
+    cap: usize,  // Buffer size
+    head: usize, // Index of most recent value
 }
 
 impl<T: Copy + Default> FixedRingBuffer<T> {
