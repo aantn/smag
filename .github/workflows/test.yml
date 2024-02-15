@@ -31,10 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@main
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       # Caching:
       - name: Cache cargo registry
@@ -90,10 +89,9 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1
@@ -108,10 +106,9 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
           components: clippy
 
       - uses: actions-rs/clippy-check@v1
@@ -127,10 +124,9 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
           components: rustfmt
 
       - name: Run cargo fmt
