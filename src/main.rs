@@ -46,6 +46,14 @@ pub struct Args {
     y_label: String,
 
     #[structopt(
+        short = "r",
+        long = "range",
+        default_value = "",
+        help = "Range (min, max) [and tick increment] of the y-axis (e.g. '0,100' or '-1,1,0.5')"
+    )]
+    manual_range: String,
+
+    #[structopt(
         short = "d",
         long = "diff",
         help = "Graph the diff of subsequent command outputs"
