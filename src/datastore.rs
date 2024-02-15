@@ -24,7 +24,7 @@ impl DataStore {
                 .collect(),
             window_min: vec![0.0; host_count],
             window_max: vec![args.buffer_size as f64; host_count],
-            args: args,
+            args,
         }
     }
     pub fn update(&mut self, cmd_index: usize, x_index: u64, item: Option<f64>) {
@@ -74,8 +74,7 @@ impl DataStore {
         let iter = self
             .data
             .iter()
-            .map(|b| b.as_slice())
-            .flatten()
+            .flat_map(|b| b.as_slice())
             .map(|v| v.1);
         let min = iter.clone().fold(f64::INFINITY, |a, b| a.min(b));
         let max = iter.fold(0f64, |a, b| a.max(b));
@@ -126,20 +125,11 @@ impl DataStore {
     }
 
     fn format_tick(&self, increment: f64, value: f64) -> String {
-        if increment > 1.0 {
+        if increment >= 1.0 {
             format!("{:.0}", value)
-        } else if increment < 1.0 && increment >= 0.1 {
-            format!("{:.1}", value)
-        } else if increment < 0.1 && increment >= 0.01 {
-            format!("{:.2}", value)
-        } else if increment < 0.01 && increment >= 0.001 {
-            format!("{:.3}", value)
-        } else if increment < 0.001 && increment >= 0.0001 {
-            format!("{:.4}", value)
-        } else if increment < 0.0001 && increment >= 0.00001 {
-            format!("{:.5}", value)
         } else {
-            format!("{}", value)
+            let precision: usize = increment.log10().abs().ceil() as usize;
+            format!("{:.precision$}", value)
         }
     }
 
@@ -151,10 +141,10 @@ impl DataStore {
 
         let y_label = &self.args.y_label;
         let mut suffix = String::new();
-        suffix.push_str(" ");
+        suffix.push(' ');
         if !y_label.is_empty() {
-            suffix.push_str(&y_label);
-            suffix.push_str(" ");
+            suffix.push_str(y_label);
+            suffix.push(' ');
         }
 
         (0..num_ticks)
