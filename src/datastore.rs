@@ -50,17 +50,26 @@ impl DataStore {
         }
     }
 
-    pub fn stats(&self) -> Vec<Histogram> {
+    pub fn stats(&self) -> Vec<Result<(f64, f64, u64), &str>> {
         self.data
             .iter()
             .map(|data| {
                 let mut hist = Histogram::new();
+                let mut min = f64::INFINITY;
+                let mut max = 0_f64;
 
                 for (_, val) in data.iter().filter(|v| v.1 != 0f64) {
                     hist.increment(*val as u64).unwrap_or(());
+                    min = min.min(*val);
+                    max = max.max(*val);
                 }
 
-                hist
+                if let Ok(p95) = hist.percentile(95.0) {
+                    if min != f64::INFINITY && max != 0_f64 {
+                        return Ok((min, max, p95));
+                    }
+                }
+                Err("No data")
             })
             .collect()
     }
@@ -121,12 +130,8 @@ impl DataStore {
     }
 
     fn format_tick(&self, increment: f64, value: f64) -> String {
-        if increment >= 1.0 {
-            format!("{:.0}", value)
-        } else {
-            let precision: usize = increment.log10().abs().ceil() as usize;
-            format!("{:.precision$}", value)
-        }
+        let precision: usize = increment.log10().abs().ceil().max(1.0) as usize;
+        format!("{:.precision$}", value)
     }
 
     pub fn y_axis_labels(&self, bounds: [f64; 2], num_ticks: i32) -> Vec<Span> {
