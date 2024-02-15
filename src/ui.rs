@@ -57,8 +57,8 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 ([min, max], num_ticks)
             };
 
-            let increment = (y_axis_bounds[1] - y_axis_bounds[0]) / (y_axis_num_ticks - 1) as f64;
-            let precision: usize = increment.log10().abs().ceil().max(1.0) as usize + 1;
+            let range_hundredth = (y_axis_bounds[1] - y_axis_bounds[0]) / 100.0;
+            let precision: usize = (-range_hundredth.log10().floor()).max(0.0) as usize;
 
             // Top level layout
             let chunks: Vec<tui::layout::Rect> = Layout::default()
