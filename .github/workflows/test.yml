@@ -111,9 +111,8 @@ jobs:
           toolchain: stable
           components: clippy
 
-      - uses: actions-rs/clippy-check@v1
+      - uses: clechasseur/rs-clippy-check@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
 
   fmt:
