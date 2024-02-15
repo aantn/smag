@@ -71,11 +71,7 @@ impl DataStore {
         ]
     }
     pub fn y_axis_bounds(&self, chart_height: i32) -> ([f64; 2], i32) {
-        let iter = self
-            .data
-            .iter()
-            .flat_map(|b| b.as_slice())
-            .map(|v| v.1);
+        let iter = self.data.iter().flat_map(|b| b.as_slice()).map(|v| v.1);
         let min = iter.clone().fold(f64::INFINITY, |a, b| a.min(b));
         let max = iter.fold(0f64, |a, b| a.max(b));
         let range = max - min;
