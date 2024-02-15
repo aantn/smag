@@ -130,7 +130,7 @@ impl DataStore {
     }
 
     fn format_tick(&self, increment: f64, value: f64) -> String {
-        let precision: usize = increment.log10().abs().ceil().max(1.0) as usize;
+        let precision: usize = (-increment.log10().floor()).max(0.0) as usize;
         format!("{:.precision$}", value)
     }
 
