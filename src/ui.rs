@@ -13,63 +13,6 @@ pub fn draw_ui<T: tui::backend::Backend>(
 ) {
     terminal
         .draw(|f| {
-            let chunks: Vec<tui::layout::Rect> = Layout::default()
-                .direction(Direction::Vertical)
-                .margin(2)
-                .constraints(
-                    iter::repeat(Constraint::Length(1))
-                        .take(args.cmds.len())
-                        .chain(iter::once(Constraint::Percentage(10)))
-                        .collect::<Vec<Constraint>>(),
-                )
-                .split(f.size());
-            for (((cmd_id, cmd), stats), &style) in args
-                .cmds
-                .iter()
-                .enumerate()
-                .zip(data_store.stats())
-                .zip(&data_store.styles)
-            {
-                let header_layout = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints(
-                        [
-                            Constraint::Percentage(40),
-                            Constraint::Percentage(15),
-                            Constraint::Percentage(15),
-                            Constraint::Percentage(15),
-                            Constraint::Percentage(15),
-                        ]
-                        .as_ref(),
-                    )
-                    .split(chunks[cmd_id]);
-
-                f.render_widget(
-                    Paragraph::new(format!("Running cmd: {}", cmd)).style(style),
-                    header_layout[0],
-                );
-
-                f.render_widget(
-                    Paragraph::new(format!("current {:?}", data_store.last(cmd_id) as u64))
-                        .style(style),
-                    header_layout[1],
-                );
-
-                f.render_widget(
-                    Paragraph::new(format!("min {:?}", stats.minimum().unwrap_or(0))).style(style),
-                    header_layout[2],
-                );
-                f.render_widget(
-                    Paragraph::new(format!("max {:?}", stats.maximum().unwrap_or(0))).style(style),
-                    header_layout[3],
-                );
-                f.render_widget(
-                    Paragraph::new(format!("p95 {:?}", stats.percentile(95.0).unwrap_or(0)))
-                        .style(style),
-                    header_layout[4],
-                );
-            }
-
             let datasets: Vec<_> = data_store
                 .data
                 .iter()
@@ -114,6 +57,71 @@ pub fn draw_ui<T: tui::backend::Backend>(
                 ([min, max], num_ticks)
             };
 
+            let range_hundredth = (y_axis_bounds[1] - y_axis_bounds[0]) / 100.0;
+            let precision: usize = (-range_hundredth.log10().floor()).max(0.0) as usize;
+
+            // Top level layout
+            let chunks: Vec<tui::layout::Rect> = Layout::default()
+                .direction(Direction::Vertical)
+                .margin(2)
+                .constraints(
+                    iter::repeat(Constraint::Length(1))
+                        .take(args.cmds.len())
+                        .chain(iter::once(Constraint::Percentage(10)))
+                        .collect::<Vec<Constraint>>(),
+                )
+                .split(f.size());
+
+            // Header line for each command
+            for (((cmd_id, cmd), stats), &style) in args
+                .cmds
+                .iter()
+                .enumerate()
+                .zip(data_store.stats())
+                .zip(&data_store.styles)
+            {
+                let header_layout = Layout::default()
+                    .direction(Direction::Horizontal)
+                    .constraints(
+                        [
+                            Constraint::Percentage(40),
+                            Constraint::Percentage(15),
+                            Constraint::Percentage(15),
+                            Constraint::Percentage(15),
+                            Constraint::Percentage(15),
+                        ]
+                        .as_ref(),
+                    )
+                    .split(chunks[cmd_id]);
+
+                f.render_widget(
+                    Paragraph::new(format!("Running cmd: {}", cmd)).style(style),
+                    header_layout[0],
+                );
+
+                f.render_widget(
+                    Paragraph::new(format!("current {:.precision$}", data_store.last(cmd_id)))
+                        .style(style),
+                    header_layout[1],
+                );
+
+                if let Ok((min, max, p95)) = stats {
+                    f.render_widget(
+                        Paragraph::new(format!("min {:.precision$}", min)).style(style),
+                        header_layout[2],
+                    );
+                    f.render_widget(
+                        Paragraph::new(format!("max {:.precision$}", max)).style(style),
+                        header_layout[3],
+                    );
+                    f.render_widget(
+                        Paragraph::new(format!("p95 {:.precision$}", p95)).style(style),
+                        header_layout[4],
+                    );
+                }
+            }
+
+            // Chart
             let chart = Chart::new(datasets)
                 .block(Block::default().borders(Borders::NONE))
                 .x_axis(
