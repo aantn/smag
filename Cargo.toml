@@ -1,7 +1,7 @@
 [package]
 name = "smag"
 version = "0.7.0"
-authors = ["Natan Yellin", "Tom Forbes <tom@tomforb.es>"]
+authors = ["Natan Yellin", "Tom Forbes <tom@tomforb.es>", "Simon Vetter"]
 edition = "2018"
 repository = "https://github.com/aantn/smag"
 license = "MIT"
