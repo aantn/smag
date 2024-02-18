@@ -96,19 +96,20 @@ pub fn draw_ui<T: tui::backend::Backend>(
                     panic!("Invalid range format. Please use 'min,max' or 'min,max,increment'");
                 }
 
-                let min : f64 = parts.next().unwrap().parse().unwrap();
-                let max : f64 = parts.next().unwrap().parse().unwrap();
+                let min: f64 = parts.next().unwrap().parse().unwrap();
+                let max: f64 = parts.next().unwrap().parse().unwrap();
                 if min >= max {
                     panic!("Invalid range format. Make sure min is less than max.");
                 }
-                let increment : f64 = if num_args == 3 {
+                let increment: f64 = if num_args == 3 {
                     parts.next().unwrap().parse().unwrap()
                 } else {
                     let target_lines_per_tick = 6.0;
-                    let target_num_ticks : f64 = (chart_height - 1) as f64 / target_lines_per_tick;
+                    let target_num_ticks: f64 = (chart_height - 1) as f64 / target_lines_per_tick;
                     (max - min) / target_num_ticks
-                }.min(max - min);   // Make sure increment is not greater than range
-                let num_ticks : i32 = ((max - min) / increment).round() as i32 + 1;
+                }
+                .min(max - min); // Make sure increment is not greater than range
+                let num_ticks: i32 = ((max - min) / increment).round() as i32 + 1;
 
                 ([min, max], num_ticks)
             };
